@@ -1,7 +1,10 @@
 This reimbursements calculator is a sales tool for the account team to easily navigate scoping and pricing out multi country currencies. 
 Visit https://reimbursements-calculator.netlify.app
-Privacy Policy on PII: App does not save any personal information such as email address nor name. This app is for demonstration purposes only. 
-You can test using test@email.com and John Smith.
+Privacy Policy on PII: App does not capture nor save any personal identifiable information, such as email address nor name. 
+This app is for demonstration purposes only. 
+Log in/Testing: (No need to use your real name)
+Name - Test User , 
+Email - test.user@company.com
 
 # React + Vite
 
