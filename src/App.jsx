@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import LoginPage from "./LogIn.jsx";
 
 // ── Static Data ──────────────────────────────────────────────────────
 const CURRENCIES = {
@@ -185,13 +186,13 @@ const Select = ({ label, value, onChange, options, placeholder, style = {} }) =>
 );
 
 // ── Main App ─────────────────────────────────────────────────────
-export default function ReimbursementsCalculatorApp() {
+function ReimbursementsCalculatorApp({ user, onLogout }) {
   const [step, setStep] = useState(0);
   const [showFAQ, setShowFAQ] = useState(false);
   const [faqOpen, setFaqOpen] = useState(null);
 
-  // Instructions data
-  const [prospect, setProspect] = useState({ name: "", preparedBy: "", date: new Date().toISOString().split("T")[0], sfLink: "" });
+  // Instructions data ("Prepared By" defaults to the signed-in user)
+  const [prospect, setProspect] = useState({ name: "", preparedBy: user?.name || "", date: new Date().toISOString().split("T")[0], sfLink: "" });
 
   // Approval
   const [approvedBy, setApprovedBy] = useState("");
@@ -917,6 +918,32 @@ export default function ReimbursementsCalculatorApp() {
               </div>
             )}
           </div>
+
+          {/* Signed-in user + sign out */}
+          {user && (
+            <>
+              <div style={{ height: 20, width: 1, background: "rgba(255,255,255,0.2)" }}></div>
+              <div title={user.email} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{
+                  width: 28, height: 28, borderRadius: "50%", background: colors.teal, color: colors.navy,
+                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800,
+                }}>
+                  {user.name.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+                </span>
+                <span style={{ fontSize: 13, color: "rgba(255,255,255,0.85)" }}>{user.name}</span>
+              </div>
+              <button
+                onClick={onLogout}
+                style={{
+                  background: "transparent", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 8,
+                  color: "#fff", padding: "6px 14px", fontSize: 13, fontWeight: 600,
+                  cursor: "pointer", fontFamily: "inherit",
+                }}
+              >
+                Sign out
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -1048,9 +1075,35 @@ export default function ReimbursementsCalculatorApp() {
         </div>
       )}
       <style>{`@keyframes toastIn { from { opacity:0; transform: translateX(-50%) translateY(16px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }`}</style>
-
-      {/* Load font */}
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     </div>
   );
+}
+// ── App shell: Login → Calculator ───────────────────────────────
+// The signed-in user is kept in sessionStorage so a page refresh doesn't
+// sign you out (it clears when the browser tab is closed).
+const SESSION_KEY = "rc-user";
+
+const loadUser = () => {
+  try {
+    return JSON.parse(sessionStorage.getItem(SESSION_KEY)) || null;
+  } catch {
+    return null;
+  }
+};
+
+export default function App() {
+  const [user, setUser] = useState(loadUser);
+
+  const handleLogin = (u) => {
+    try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(u)); } catch { /* storage unavailable */ }
+    setUser(u);
+  };
+
+  const handleLogout = () => {
+    try { sessionStorage.removeItem(SESSION_KEY); } catch { /* storage unavailable */ }
+    setUser(null);
+  };
+
+  if (!user) return <LoginPage onLogin={handleLogin} />;
+  return <ReimbursementsCalculatorApp user={user} onLogout={handleLogout} />;
 }
