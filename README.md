@@ -1,3 +1,5 @@
+This reimbursements calculator is a sales tool for the account team to easily navigate scoping and pricing out multi country currencies. 
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
