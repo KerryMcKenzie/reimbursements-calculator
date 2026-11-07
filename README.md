@@ -6,8 +6,12 @@
 <p>Privacy Policy on PII: App does not save any personal information such as email address nor name. This app is for demonstration purposes only.</p>
 <br>
 <p>Demo User LogIn Credentails --</p>
-<p>Name: User Test</p>
-<p>Email: user.test@company.com</p>
+Name: User Test
+Email: user.test@company.com
+<br>
+
+
+
 
 
 
