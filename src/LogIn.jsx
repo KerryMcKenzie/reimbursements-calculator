@@ -58,7 +58,7 @@ const LEGAL_CONTENT = {
     sections: [
       {
         heading: 'Demo environment',
-        body: 'This Discovery Tool is a demonstration application. It is provided for testing and evaluation purposes only.',
+        body: 'This Reimbursement Calculator is a demonstration application. It is provided for testing and evaluation purposes only.',
       },
       {
         heading: 'No personal information is collected or stored',
@@ -84,7 +84,7 @@ const LEGAL_CONTENT = {
     sections: [
       {
         heading: 'Demo purposes only',
-        body: 'This Discovery Tool is a demonstration application for testing and evaluation. It is not a production service.',
+        body: 'This Reimbursement Calculator is a demonstration application for testing and evaluation. It is not a production service.',
       },
       {
         heading: 'Provided "as is"',
