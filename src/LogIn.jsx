@@ -231,18 +231,27 @@ const legalLinkStyle = {
 
 // ---- Login Page -----------------------------------------------------------
 const LoginPage = ({ onLogin }) => {
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [legal, setLegal] = useState(null); // 'privacy' | 'terms' | null
 
-  const canSubmit = name.trim().length > 1 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const canSubmit = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && password.length > 0;
+
+  // Build a display name from the email, e.g. "user.test@company.com" -> "User Test"
+  const nameFromEmail = (addr) =>
+    addr.split('@')[0]
+      .split(/[._-]+/)
+      .filter(Boolean)
+      .map((w) => w[0].toUpperCase() + w.slice(1))
+      .join(' ');
 
   const handleSubmit = () => {
     if (!canSubmit) return;
     setLoading(true);
-    // Simulate federated SSO roundtrip
-    setTimeout(() => onLogin({ name: name.trim(), email: email.trim() }), 700);
+    // Simulate federated SSO roundtrip (demo only: the password is not checked)
+    const cleanEmail = email.trim();
+    setTimeout(() => onLogin({ name: nameFromEmail(cleanEmail), email: cleanEmail }), 700);
   };
 
   return (
@@ -291,22 +300,6 @@ const LoginPage = ({ onLogin }) => {
         zIndex: 1,
       }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #0B1D3A, #122B52)',
-            margin: '0 auto 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#00C9A7',
-            fontSize: '20px',
-            fontWeight: 800,
-            letterSpacing: '-0.02em',
-          }}>
-            RC
-          </div>
           <h1 style={{
             fontSize: '22px',
             fontWeight: 800,
@@ -317,44 +310,45 @@ const LoginPage = ({ onLogin }) => {
             <span style={{ color: '#00A88A' }}>Reimbursements</span> Calculator
           </h1>
           <p style={{ fontSize: '14px', color: '#6b7a99', margin: 0 }}>
-            Use Demo Credentials: User Test, user.test@company.com
+            Demo Credentials: user.test@company.com, any password
           </p>
-           <p style={{ fontSize: '14px', color: '#6b7a99', margin: 0 }}>
+          <p style={{ fontSize: '14px', color: '#6b7a99', margin: 0 }}>
             This is a simulated SSO login
           </p>
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-        <Field label="Full Name" required>
-          <TextInput value={name} onChange={setName} placeholder="User Test" />
-        </Field>
+          <Field label="Work Email" required>
+            <TextInput value={email} onChange={setEmail} placeholder="user.test@company.com" type="email" />
+          </Field>
 
-        <Field label="Work Email" required>
-          <TextInput value={email} onChange={setEmail} placeholder="user.test@company.com" type="email" />
-        </Field>
+          <Field label="Password" required>
+            <TextInput value={password} onChange={setPassword} placeholder="••••••••" type="password" />
+          </Field>
 
-        <button
-          type="submit"
-          disabled={!canSubmit || loading}
-          style={{
-            width: '100%',
-            padding: '12px',
-            marginTop: '8px',
-            background: canSubmit
-              ? '#2E8CFF'
-              : '#c5ccdd',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '15px',
-            fontWeight: 600,
-            cursor: canSubmit ? 'pointer' : 'not-allowed',
-            transition: 'opacity 0.15s',
-            opacity: loading ? 0.7 : 1,
-          }}
-        >
-          {loading ? 'Authenticating…' : 'Sign in with SSO'}
-        </button>
+
+          <button
+            type="submit"
+            disabled={!canSubmit || loading}
+            style={{
+              width: '100%',
+              padding: '12px',
+              marginTop: '8px',
+              background: canSubmit
+                ? '#2E8CFF'
+                : '#c5ccdd',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '15px',
+              fontWeight: 600,
+              cursor: canSubmit ? 'pointer' : 'not-allowed',
+              transition: 'opacity 0.15s',
+              opacity: loading ? 0.7 : 1,
+            }}
+          >
+            {loading ? 'Authenticating…' : 'Sign in with SSO'}
+          </button>
         </form>
 
         <div style={{
