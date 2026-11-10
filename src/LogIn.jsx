@@ -189,8 +189,8 @@ const LegalModal = ({ type, onClose }) => {
                 fontSize: '13px',
                 color: '#1a2b4a',
               }}>
-                <div><strong>Name:</strong> User Test</div>
-                <div><strong>Email:</strong> user.test@company.com</div>
+                <div><strong>Name:</strong> Test</div>
+                <div><strong>Email:</strong> test@company.com</div>
               </div>
             )}
           </div>
@@ -238,7 +238,7 @@ const LoginPage = ({ onLogin }) => {
 
   const canSubmit = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && password.length > 0;
 
-  // Build a display name from the email, e.g. "user.test@company.com" -> "User Test"
+  // Build a display name from the email, e.g. "test@company.com" -> "User Test"
   const nameFromEmail = (addr) =>
     addr.split('@')[0]
       .split(/[._-]+/)
@@ -310,7 +310,7 @@ const LoginPage = ({ onLogin }) => {
             <span style={{ color: '#00A88A' }}>Reimbursements</span> Calculator
           </h1>
           <p style={{ fontSize: '14px', color: '#6b7a99', margin: 0 }}>
-            Demo Credentials: user.test@company.com, any password
+            Demo Credentials: test@company.com, any password
           </p>
           <p style={{ fontSize: '14px', color: '#6b7a99', margin: 0 }}>
             This is a simulated SSO login
@@ -319,7 +319,7 @@ const LoginPage = ({ onLogin }) => {
 
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
           <Field label="Work Email" required>
-            <TextInput value={email} onChange={setEmail} placeholder="user.test@company.com" type="email" />
+            <TextInput value={email} onChange={setEmail} placeholder="test@company.com" type="email" />
           </Field>
 
           <Field label="Password" required>
