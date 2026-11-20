@@ -1,0 +1,26 @@
+# Netlify security headers — applied automatically to every page on deploy.
+# Docs: https://docs.netlify.com/routing/headers/
+
+/*
+  # Scripts, styles, fonts and images may only come from this site
+  # (plus Google Fonts for the DM Sans typeface). Inline <script> tags,
+  # eval(), plugins and being framed by other sites are all blocked.
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+
+  # Stop other sites from embedding the app in a frame (older browsers)
+  X-Frame-Options: DENY
+
+  # Browsers must trust the file type the server sends; no guessing
+  X-Content-Type-Options: nosniff
+
+  # Only send the bare site address to other sites when a link is followed
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Switch off device features the app never uses
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), serial=(), magnetometer=(), gyroscope=(), accelerometer=()
+
+  # Keep this page's window isolated from windows opened by other sites
+  Cross-Origin-Opener-Policy: same-origin
+
+  # Always use HTTPS for this site for the next year
+  Strict-Transport-Security: max-age=31536000

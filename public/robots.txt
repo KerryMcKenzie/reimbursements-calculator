@@ -1,0 +1,4 @@
+# This is a private demo tool, so ask every crawler to stay out.
+# Note: well-behaved bots (Google, Bing, etc.) honor this; malicious bots ignore it.
+User-agent: *
+Disallow: /

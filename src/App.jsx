@@ -610,13 +610,13 @@ function ReimbursementsCalculatorApp({ user, onLogout }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
         {[
           { label: "Monthly Total", value: <FmtUSD value={totalMonthly} />, accent: colors.accent },
-          { label: "Annual Estimate", value: <FmtUSD value={totalMonthly * 12} />, accent: colors.teal },
+          { label: "Annual Estimate", value: <FmtUSD value={totalMonthly * 12} />, accent: colors.navy },
           { label: "Total Users", value: totalUsers.toLocaleString(), accent: colors.navy },
-          { label: "Reimb / Month", value: totalReimbursements.toLocaleString(), accent: colors.warm },
+          { label: "Reimb / Month", value: totalReimbursements.toLocaleString(), accent: colors.navy },
         ].map((s, i) => (
           <div key={i} style={{
             background: "#fff", borderRadius: 12, padding: "20px 16px", textAlign: "center",
-            border: `1px solid ${colors.border}`, borderTop: `3px solid ${s.accent}`,
+            border: `1px solid ${colors.border}`, borderTop: `3px solid ${colors.accent}`,
           }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>{s.label}</div>
             <div style={{ fontSize: 24, fontWeight: 800, color: s.accent }}>{s.value}</div>
@@ -724,7 +724,7 @@ function ReimbursementsCalculatorApp({ user, onLogout }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `reimbursements-draft-${(prospect.name || "untitled").replace(/\s+/g, "-").toLowerCase()}-${new Date().toISOString().slice(0,10)}.json`;
+    a.download = `reimbursements-draft-${fileSlug(prospect.name, "untitled")}-${new Date().toISOString().slice(0,10)}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -732,7 +732,19 @@ function ReimbursementsCalculatorApp({ user, onLogout }) {
     showToast("Draft saved and downloaded!");
   }
 
+  // Safe, lowercase file-name fragment: letters, digits and dashes only.
+  function fileSlug(text, fallback) {
+    const slug = String(text || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+    return slug || fallback;
+  }
+
   function downloadPDF() {
+    // Every user-typed value is HTML-escaped before it goes into the exported
+    // file, so text like <script> or <img onerror=...> shows up as plain text
+    // instead of running as code when the file is opened.
+    const esc = (v) => String(v ?? "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const fmtMoney = (v) => "$" + (v || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
@@ -747,11 +759,11 @@ function ReimbursementsCalculatorApp({ user, onLogout }) {
       const reimb = users * cycle;
       const cycleLbl = cycle === 3 ? "Weekly" : cycle === 2 ? "Bi-weekly" : "Monthly";
       return `<tr>
-        <td style="padding:10px 14px;border-bottom:1px solid #E2E8F0;font-weight:600;color:#0B1D3A">${c}</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #E2E8F0;color:#6B7A99">${info.code}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #E2E8F0;font-weight:600;color:#0B1D3A">${esc(c)}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #E2E8F0;color:#6B7A99">${esc(info.code)}</td>
         <td style="padding:10px 14px;border-bottom:1px solid #E2E8F0;text-align:center">${users}</td>
         <td style="padding:10px 14px;border-bottom:1px solid #E2E8F0;text-align:center">${cycleLbl}</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #E2E8F0;text-align:center">${TIER_PRICING[tier].label}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #E2E8F0;text-align:center">${esc(TIER_PRICING[tier].label)}</td>
         <td style="padding:10px 14px;border-bottom:1px solid #E2E8F0;text-align:center">$${rate.toFixed(2)}</td>
         <td style="padding:10px 14px;border-bottom:1px solid #E2E8F0;text-align:center">${reimb.toLocaleString()}</td>
         <td style="padding:10px 14px;border-bottom:1px solid #E2E8F0;text-align:right;font-weight:700;color:#0B1D3A">${fmtMoney(monthly)}</td>
@@ -761,15 +773,19 @@ function ReimbursementsCalculatorApp({ user, onLogout }) {
     const scopeRows = countries.map(c => {
       const cd = countryData[c];
       return `<tr>
-        <td style="padding:8px 14px;border-bottom:1px solid #E2E8F0;font-weight:600">${c}</td>
-        <td style="padding:8px 14px;border-bottom:1px solid #E2E8F0">${cd?.erp || "\u2014"}</td>
-        <td style="padding:8px 14px;border-bottom:1px solid #E2E8F0">${cd?.cardProgram || "\u2014"}${cd?.cardType ? " (" + cd.cardType + ")" : ""}</td>
-        <td style="padding:8px 14px;border-bottom:1px solid #E2E8F0">${cd?.travelPartner || "\u2014"}</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #E2E8F0;font-weight:600">${esc(c)}</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #E2E8F0">${esc(cd?.erp || "\u2014")}</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #E2E8F0">${esc(cd?.cardProgram || "\u2014")}${cd?.cardType ? " (" + esc(cd.cardType) + ")" : ""}</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #E2E8F0">${esc(cd?.travelPartner || "\u2014")}</td>
       </tr>`;
     }).join("");
 
+    // The Content-Security-Policy meta tag is a second safety net: even if
+    // something slipped past escaping, the exported file cannot run scripts,
+    // load remote files, or submit forms. Only its own inline styles are allowed.
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
-    <title>Reimbursements Pricing - ${prospect.name || "Summary"}</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+    <title>Reimbursements Pricing - ${esc(prospect.name || "Summary")}</title>
     <style>
       @page { size: A4; margin: 0.6in; }
       body { font-family: 'Segoe UI', system-ui, sans-serif; color: #1A2B4A; margin: 0; padding: 40px; line-height: 1.5; }
@@ -795,13 +811,13 @@ function ReimbursementsCalculatorApp({ user, onLogout }) {
     </style></head><body>
     <div class="header">
       <div><div class="logo">Reimbursements Calculator</div><div style="font-size:13px;color:#6B7A99;margin-top:4px">Pricing &amp; Scoping Summary</div></div>
-      <div class="meta"><strong>${prospect.name || "\u2014"}</strong>Prepared by: ${prospect.preparedBy || "\u2014"}<br/>Date: ${prospect.date || today}${prospect.sfLink ? "<br/>SF Link: " + prospect.sfLink : ""}</div>
+      <div class="meta"><strong>${esc(prospect.name || "\u2014")}</strong>Prepared by: ${esc(prospect.preparedBy || "\u2014")}<br/>Date: ${esc(prospect.date || today)}${prospect.sfLink ? "<br/>SF Link: " + esc(prospect.sfLink) : ""}</div>
     </div>
     <div class="stat-grid">
       <div class="stat"><div class="lbl">Monthly Total</div><div class="num">${fmtMoney(totalMonthly)}</div></div>
-      <div class="stat"><div class="lbl">Annual Estimate</div><div class="num" style="color:#00C9A7">${fmtMoney(totalMonthly * 12)}</div></div>
+      <div class="stat"><div class="lbl">Annual Estimate</div><div class="num" style="color:#0B1D3A">${fmtMoney(totalMonthly * 12)}</div></div>
       <div class="stat"><div class="lbl">Total Users</div><div class="num" style="color:#0B1D3A">${totalUsers.toLocaleString()}</div></div>
-      <div class="stat"><div class="lbl">Reimb / Month</div><div class="num" style="color:#D97706">${totalReimbursements.toLocaleString()}</div></div>
+      <div class="stat"><div class="lbl">Reimb / Month</div><div class="num" style="color:#0B1D3A">${totalReimbursements.toLocaleString()}</div></div>
     </div>
     <h2>Reimbursement Pricing Breakdown</h2>
     <table>
@@ -825,10 +841,10 @@ function ReimbursementsCalculatorApp({ user, onLogout }) {
       <tbody>${scopeRows}</tbody>
     </table>` : ""}
     <div class="approval">
-      <div class="approval-field"><div class="label">Approved By</div><div class="value">${approvedBy || ""}</div></div>
-      <div class="approval-field"><div class="label">Date Approved</div><div class="value">${dateApproved || ""}</div></div>
-      <div class="approval-field"><div class="label">Prepared By</div><div class="value">${prospect.preparedBy || ""}</div></div>
-      <div class="approval-field"><div class="label">Prepared Date</div><div class="value">${prospect.date || ""}</div></div>
+      <div class="approval-field"><div class="label">Approved By</div><div class="value">${esc(approvedBy)}</div></div>
+      <div class="approval-field"><div class="label">Date Approved</div><div class="value">${esc(dateApproved)}</div></div>
+      <div class="approval-field"><div class="label">Prepared By</div><div class="value">${esc(prospect.preparedBy)}</div></div>
+      <div class="approval-field"><div class="label">Prepared Date</div><div class="value">${esc(prospect.date)}</div></div>
     </div>
     <div class="footer"><span>Reimbursements Pricing Calculator</span><span>Generated ${today}</span></div>
     </body></html>`;
@@ -837,7 +853,7 @@ function ReimbursementsCalculatorApp({ user, onLogout }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `reimbursements-pricing-${(prospect.name || "summary").replace(/\s+/g, "-").toLowerCase()}-${new Date().toISOString().slice(0,10)}.html`;
+    a.download = `reimbursements-pricing-${fileSlug(prospect.name, "summary")}-${new Date().toISOString().slice(0,10)}.html`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -1074,7 +1090,6 @@ function ReimbursementsCalculatorApp({ user, onLogout }) {
           {toast.msg}
         </div>
       )}
-      <style>{`@keyframes toastIn { from { opacity:0; transform: translateX(-50%) translateY(16px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }`}</style>
     </div>
   );
 }
