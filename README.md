@@ -6,7 +6,7 @@
 <p>Privacy Policy on PII: App does not save any personal information such as email address nor name. This app is for demonstration purposes only.</p>
 <br>
 <p>Demo LogIn Credentials --</p>
-<p>Email: test@company.com</p>
+<p>User Name: demo</p>
 <p>Password: 12345</p>
 
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { login } from './auth.js';
 
 // ---- Form helpers ---------------------------------------------------------
 const Field = ({ label, required, children, hint }) => (
@@ -26,8 +27,8 @@ const inputStyle = {
   width: '100%',
   padding: '10px 12px',
   fontSize: '14px',
-  border: '1px solid #E2E8F0',
-  borderRadius: '8px',
+  border: '1px solid #d5dcea',
+  borderRadius: '6px',
   background: '#fff',
   color: '#1a2b4a',
   fontFamily: 'inherit',
@@ -42,9 +43,9 @@ const TextInput = ({ value, onChange, placeholder, type = 'text' }) => (
     value={value || ''}
     onChange={(e) => onChange(e.target.value)}
     placeholder={placeholder}
-    style={inputStyle}
-    onFocus={(e) => { e.target.style.borderColor = '#2E8CFF'; e.target.style.boxShadow = '0 0 0 3px rgba(46,140,255,0.25)'; }}
-    onBlur={(e) => { e.target.style.borderColor = '#E2E8F0'; e.target.style.boxShadow = 'none'; }}
+    style={{ ...inputStyle, height: '42px' }}
+    onFocus={(e) => { e.target.style.borderColor = '#4364F7'; e.target.style.boxShadow = '0 0 0 3px rgba(67,100,247,0.12)'; }}
+    onBlur={(e) => { e.target.style.borderColor = '#d5dcea'; e.target.style.boxShadow = 'none'; }}
   />
 );
 
@@ -122,7 +123,7 @@ const LegalModal = ({ type, onClose }) => {
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(11,29,58,0.5)',
+        background: 'rgba(10,31,74,0.45)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -182,9 +183,9 @@ const LegalModal = ({ type, onClose }) => {
             {s.demo && (
               <div style={{
                 marginTop: '8px',
-                background: '#F7F9FC',
-                border: '1px solid #E2E8F0',
-                borderRadius: '8px',
+                background: '#f4f6fb',
+                border: '1px solid #e0e8f7',
+                borderRadius: '6px',
                 padding: '10px 12px',
                 fontSize: '13px',
                 color: '#1a2b4a',
@@ -202,10 +203,10 @@ const LegalModal = ({ type, onClose }) => {
             width: '100%',
             marginTop: '4px',
             padding: '10px',
-            background: '#2E8CFF',
+            background: '#0052D4',
             color: '#fff',
             border: 'none',
-            borderRadius: '8px',
+            borderRadius: '6px',
             fontSize: '14px',
             fontWeight: 600,
             cursor: 'pointer',
@@ -222,7 +223,7 @@ const legalLinkStyle = {
   background: 'none',
   border: 'none',
   padding: 0,
-  color: '#2E8CFF',
+  color: '#4364F7',
   fontSize: '12px',
   cursor: 'pointer',
   textDecoration: 'underline',
@@ -231,12 +232,14 @@ const legalLinkStyle = {
 
 // ---- Login Page -----------------------------------------------------------
 const LoginPage = ({ onLogin }) => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [legal, setLegal] = useState(null); // 'privacy' | 'terms' | null
 
-  const canSubmit = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && password.length > 0;
+  // Any user name (e.g. "demo") or an email address
+  const canSubmit = username.trim().length >= 1 && password.length > 0;
 
   // Build a display name from the email, e.g. "test@company.com" -> "User Test"
   const nameFromEmail = (addr) =>
@@ -246,23 +249,37 @@ const LoginPage = ({ onLogin }) => {
       .map((w) => w[0].toUpperCase() + w.slice(1))
       .join(' ');
 
-  const handleSubmit = () => {
-    if (!canSubmit) return;
+  const handleSubmit = async () => {
+    if (!canSubmit || loading) return;
     setLoading(true);
-    // Simulate federated SSO roundtrip (demo only: the password is not checked)
-    const cleanEmail = email.trim();
-    setTimeout(() => onLogin({ name: nameFromEmail(cleanEmail), email: cleanEmail }), 700);
+    setError('');
+    const u = username.trim();
+    // The user name and password are checked on Netlify's server (never in the browser)
+    const result = await login(u, password);
+    if (!result.ok) {
+      setLoading(false);
+      setPassword('');
+      setError(result.error);
+      return;
+    }
+    // "demo" → name "Demo"; "test@company.com" → name "Test" + email
+    try {
+      await onLogin({ name: nameFromEmail(u), email: u.includes('@') ? u : '' });
+    } catch {
+      setLoading(false);
+      setError('Signed in, but the app could not load. Please refresh and try again.');
+    }
   };
 
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#F7F9FC',
+      background: '#f4f6fb',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '20px',
-      fontFamily: "'DM Sans', 'Segoe UI', system-ui, sans-serif",
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       position: 'relative',
       overflow: 'hidden',
     }}>
@@ -274,7 +291,7 @@ const LoginPage = ({ onLogin }) => {
         width: '500px',
         height: '500px',
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(46,140,255,0.10) 0%, rgba(46,140,255,0) 70%)',
+        background: 'radial-gradient(circle, rgba(67,100,247,0.08) 0%, rgba(111,177,252,0) 70%)',
         pointerEvents: 'none',
       }} />
       <div style={{
@@ -284,7 +301,7 @@ const LoginPage = ({ onLogin }) => {
         width: '400px',
         height: '400px',
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(0,201,167,0.08) 0%, rgba(0,201,167,0) 70%)',
+        background: 'radial-gradient(circle, rgba(0,82,212,0.06) 0%, rgba(67,100,247,0) 70%)',
         pointerEvents: 'none',
       }} />
 
@@ -295,37 +312,57 @@ const LoginPage = ({ onLogin }) => {
         width: '100%',
         maxWidth: '420px',
         boxShadow: '0 10px 40px rgba(26,43,74,0.08), 0 2px 8px rgba(26,43,74,0.04)',
-        border: '1px solid #E2E8F0',
+        border: '1px solid #e0e8f7',
         position: 'relative',
         zIndex: 1,
       }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h1 style={{
-            fontSize: '22px',
+            fontSize: '26px',
             fontWeight: 800,
-            color: '#1a2b4a',
-            margin: '0 0 14px',
+            color: '#0c0677',
+            margin: '0 0 10px',
             letterSpacing: '-0.02em',
+            lineHeight: 1.2,
           }}>
-            <span style={{ color: '#00A88A' }}>Reimbursements</span> Calculator
+            Reimbursements{' '}
+            <span style={{ fontWeight: 400, color: '#4a5878' }}>Calculator</span>
           </h1>
+          {/* Short accent bar under the title */}
+          <div style={{
+            width: '40px',
+            height: '3px',
+            borderRadius: '2px',
+            background: '#0052D4',
+            margin: '0 auto 20px',
+          }} />
           <p style={{ fontSize: '14px', color: '#6b7a99', margin: 0 }}>
-            Demo Credentials: test@company.com, any password
-          </p>
-          <p style={{ fontSize: '14px', color: '#6b7a99', margin: 0 }}>
-            This is a simulated SSO login
+            Sign in with the user name and password provided.
           </p>
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-          <Field label="Work Email" required>
-            <TextInput value={email} onChange={setEmail} placeholder="test@company.com" type="email" />
+          <Field label="User Name" required>
+            <TextInput value={username} onChange={setUsername} placeholder="User name" type="text" />
           </Field>
 
           <Field label="Password" required>
             <TextInput value={password} onChange={setPassword} placeholder="••••••••" type="password" />
           </Field>
 
+          {error && (
+            <div role="alert" style={{
+              margin: '-4px 0 12px',
+              padding: '10px 12px',
+              background: '#fdecea',
+              border: '1px solid #f5c2bd',
+              borderRadius: '6px',
+              color: '#a3261b',
+              fontSize: '13px',
+            }}>
+              {error}
+            </div>
+          )}
 
           <button
             type="submit"
@@ -339,7 +376,7 @@ const LoginPage = ({ onLogin }) => {
                 : '#c5ccdd',
               color: '#fff',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: '6px',
               fontSize: '15px',
               fontWeight: 600,
               cursor: canSubmit ? 'pointer' : 'not-allowed',

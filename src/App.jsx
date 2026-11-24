@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import LoginPage from "./LogIn.jsx";
 
 // ── Static Data ──────────────────────────────────────────────────────
 const CURRENCIES = {
@@ -186,7 +185,9 @@ const Select = ({ label, value, onChange, options, placeholder, style = {} }) =>
 );
 
 // ── Main App ─────────────────────────────────────────────────────
-function ReimbursementsCalculatorApp({ user, onLogout }) {
+// The protected calculator. Only loaded after a successful server-side login
+// (see Root.jsx and netlify/edge-functions/auth.js).
+export default function ReimbursementsCalculatorApp({ user, onLogout }) {
   const [step, setStep] = useState(0);
   const [showFAQ, setShowFAQ] = useState(false);
   const [faqOpen, setFaqOpen] = useState(null);
@@ -1092,33 +1093,4 @@ function ReimbursementsCalculatorApp({ user, onLogout }) {
       )}
     </div>
   );
-}
-// ── App shell: Login → Calculator ───────────────────────────────
-// The signed-in user is kept in sessionStorage so a page refresh doesn't
-// sign you out (it clears when the browser tab is closed).
-const SESSION_KEY = "rc-user";
-
-const loadUser = () => {
-  try {
-    return JSON.parse(sessionStorage.getItem(SESSION_KEY)) || null;
-  } catch {
-    return null;
-  }
-};
-
-export default function App() {
-  const [user, setUser] = useState(loadUser);
-
-  const handleLogin = (u) => {
-    try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(u)); } catch { /* storage unavailable */ }
-    setUser(u);
-  };
-
-  const handleLogout = () => {
-    try { sessionStorage.removeItem(SESSION_KEY); } catch { /* storage unavailable */ }
-    setUser(null);
-  };
-
-  if (!user) return <LoginPage onLogin={handleLogin} />;
-  return <ReimbursementsCalculatorApp user={user} onLogout={handleLogout} />;
 }
